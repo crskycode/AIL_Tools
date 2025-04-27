@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81 d17.13
+VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptTool", "ScriptTool\ScriptTool.csproj", "{6340048F-04EC-4FDA-8EF1-C90E2D98E903}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcTool", "ArcTool\ArcTool.csproj", "{940CC0B2-9D0A-4FB8-B657-A51E75400E17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6340048F-04EC-4FDA-8EF1-C90E2D98E903}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6340048F-04EC-4FDA-8EF1-C90E2D98E903}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6340048F-04EC-4FDA-8EF1-C90E2D98E903}.Release|Any CPU.Build.0 = Release|Any CPU
+		{940CC0B2-9D0A-4FB8-B657-A51E75400E17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{940CC0B2-9D0A-4FB8-B657-A51E75400E17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{940CC0B2-9D0A-4FB8-B657-A51E75400E17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{940CC0B2-9D0A-4FB8-B657-A51E75400E17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

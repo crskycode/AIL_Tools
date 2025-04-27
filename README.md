@@ -2,6 +2,34 @@
 
 This toolkit is designed for modifying games developed with the AILSystem engine.
 
+## Resource Packs
+
+Resource pack files for this engine have the `.DAT` or `.SNL` extension.
+
+### Extracting Files from a Resource Pack
+
+Run the following command:
+```
+ArcTool -e -in input.DAT -out Extract
+```
+
+Parameter Description:
+- `-e`: Extract files from the resource pack.
+- `-in`: Specify the resource pack filename.
+- `-out`: Specify the directory where extracted items will be stored.
+
+### Creating a Resource Pack
+
+Run the following command:
+```
+ArcTool -c -in RootDirectory -out res.DAT
+```
+
+Parameter Description:
+- `-c`: Create a resource pack.
+- `-in`: Specify the folder containing files you wish to add to the resource pack.
+- `-out`: Specify the resource pack filename.
+
 ## Scripts
 
 Script files for this engine is no extension and do not have an identifier in the file header.
