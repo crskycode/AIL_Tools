@@ -2219,7 +2219,9 @@ namespace ScriptTool
             var translation = Translation.Load(filePath);
 
             var codeWriter = new BinaryWriter(new MemoryStream(_codeBuffer));
-            var stringWriter = new BinaryWriter(new MemoryStream());
+
+            var stringPoolStream = new MemoryStream();
+            var stringWriter = new BinaryWriter(stringPoolStream);
 
             // Keep the original strings and add new strings.
             // This increases the file size but can reduce data errors caused by incomplete code analysis.
@@ -2260,6 +2262,8 @@ namespace ScriptTool
                     codeWriter.Write(Convert.ToUInt16(offset));
                 }
             }
+
+            _stringPool = stringPoolStream.ToArray();
         }
 
         public void ImportTextRebuild(string filePath, Encoding encoding)
