@@ -123,9 +123,9 @@ namespace ArcTool
                 {
                     doCompress = BitConverter.ToUInt32(data) switch
                     {
-                        0x474E5089 => true, // PNG
-                        0x5367674F => true, // OGG
-                        _ => false,
+                        0x474E5089 => false, // PNG
+                        0x5367674F => false, // OGG
+                        _ => true,
                     };
                 }
 
