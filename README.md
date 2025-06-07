@@ -47,6 +47,8 @@ Parameter Description:
 - `-icp`: Specify the encoding of text within the script file. This is usually `shift_jis`.
 - `-out`: Specify the output filename.
 
+> Note: if parsing the script fails, try adding the "-v2" option.
+
 ### Extracting Text from Scripts
 
 Run the following command:
