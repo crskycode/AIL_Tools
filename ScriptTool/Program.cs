@@ -41,11 +41,19 @@ namespace ScriptTool
             var outputPath = Path.GetFullPath(parsedArgs["-out"]);
             var inputEncoding = Encoding.GetEncoding(parsedArgs["-icp"]);
 
+            // Versions
+            var scriptVersion = 1;
+
+            if (parsedArgs.ContainsKey("-v2"))
+            {
+                scriptVersion = 2;
+            }
+
             // Disassemble
             if (parsedArgs.ContainsKey("-d"))
             {
                 var script = new Script();
-                script.Load(inputPath, inputEncoding);
+                script.Load(inputPath, inputEncoding, scriptVersion);
                 script.ExportDisasm(outputPath);
                 return;
             }
@@ -54,7 +62,7 @@ namespace ScriptTool
             if (parsedArgs.ContainsKey("-e"))
             {
                 var script = new Script();
-                script.Load(inputPath, inputEncoding);
+                script.Load(inputPath, inputEncoding, scriptVersion);
                 script.ExportText(outputPath);
                 return;
             }
@@ -68,7 +76,7 @@ namespace ScriptTool
                 var outputEncoding = Encoding.GetEncoding(parsedArgs["-ocp"]);
 
                 var script = new Script();
-                script.Load(inputPath, inputEncoding);
+                script.Load(inputPath, inputEncoding, scriptVersion);
                 script.ImportText(txtPath, outputEncoding);
                 script.Save(outputPath);
 
@@ -84,7 +92,7 @@ namespace ScriptTool
                 var outputEncoding = Encoding.GetEncoding(parsedArgs["-ocp"]);
 
                 var script = new Script();
-                script.Load(inputPath, inputEncoding);
+                script.Load(inputPath, inputEncoding, scriptVersion);
                 script.ImportTextRebuild(txtPath, outputEncoding);
                 script.Save(outputPath);
 

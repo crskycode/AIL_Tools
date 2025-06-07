@@ -9,6 +9,7 @@ namespace ScriptTool
     internal class Script
     {
         private Encoding _encoding = Encoding.UTF8;
+        private int _version = 1;
         private byte[] _header = [];
         private List<Tuple<int, int>> _labels = [];
         private int _codePos = 0;
@@ -22,10 +23,11 @@ namespace ScriptTool
         // The code addresses that references the strings.
         private List<int> _stringRef = [];
 
-        public void Load(string filePath, Encoding encoding)
+        public void Load(string filePath, Encoding encoding, int version)
         {
             using var reader = new BinaryReader(File.OpenRead(filePath));
 
+            _version = version;
             _header = reader.ReadBytes(12);
 
             var signature = BitConverter.ToInt32(_header, 0);
@@ -144,7 +146,10 @@ namespace ScriptTool
                     case 0x00:
                     {
                         Dis?.AppendLine($"{addr:X8} | exec_func");
-                        ParseFunction(reader);
+                        if (_version == 2)
+                            ParseFunctionV2(reader);
+                        else
+                            ParseFunction(reader);
                         break;
                     }
                     case 0x04:
@@ -162,7 +167,10 @@ namespace ScriptTool
                         var reg = reader.ReadByte();
                         var mask = reader.ReadUInt16();
                         Dis?.AppendLine($"{addr:X8} | ; reg 0x{reg:X2} 0x{mask:X2}");
-                        ParseFunction(reader); // value
+                        if (_version == 2)
+                            ParseFunctionV2(reader); // value
+                        else
+                            ParseFunction(reader);
                         break;
                     }
                     case 0x08:
@@ -2023,6 +2031,1838 @@ namespace ScriptTool
                 {
                     Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
                     ParseExpression(reader); // 1
+                    break;
+                }
+                default:
+                {
+                    throw new Exception($"Unexpected function code {code:X2} at {addr:X8} .");
+                }
+            }
+        }
+
+        private void ParseFunctionV2(BinaryReader reader)
+        {
+            var addr = _codePos + Convert.ToInt32(reader.BaseStream.Position);
+            var code = reader.ReadByte();
+
+            switch (code)
+            {
+                case 0x00:
+                {
+                    Dis?.AppendLine($"{addr:X8} | push string");
+                    Dis?.AppendLine($"{addr:X8} | ; type 0");
+                    ParseStringReference(reader);
+                    break;
+                }
+                case 0x01:
+                {
+                    Dis?.AppendLine($"{addr:X8} | push string");
+                    Dis?.AppendLine($"{addr:X8} | ; type 1");
+                    ParseStringReference(reader);
+                    break;
+                }
+                case 0x02:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x03:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x04:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x05:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x06:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x07:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x08:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x09:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x0A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x0B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x0C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x0D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x0E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x0F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x10:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x11:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x12:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x13:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x14:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x15:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x16:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x17:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x18:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x19:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x1A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    break;
+                }
+                case 0x1B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    break;
+                }
+                case 0x1C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    ParseExpression(reader); // 9
+                    ParseExpression(reader); // 10
+                    ParseExpression(reader); // 11
+                    break;
+                }
+                case 0x1D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x1E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x1F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x20:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x21:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x22:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x23:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x24:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x25:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x26:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x27:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x28:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x29:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    ParseExpression(reader); // 9
+                    ParseExpression(reader); // 10
+                    ParseExpression(reader); // 11
+                    break;
+                }
+                case 0x2A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x2B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x2C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x2D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x2E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x2F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x30:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x31:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x32:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x33:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x34:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x35:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x36:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x37:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x38:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x39:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x3A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x3B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x3C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x3D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x3E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x3F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x40:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x41:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x42:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x43:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x44:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x45:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x46:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x47:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x48:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x49:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x4A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x4B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x4C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x4D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x4E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x4F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x50:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x51:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x52:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x53:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x54:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x55:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x56:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x57:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x58:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x59:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x5A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x5B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x5C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x5D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x5E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x5F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x60:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x61:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x62:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x63:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x64:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x65:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x66:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x67:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x68:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x69:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x6A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x6B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x6C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x6D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    ParseExpression(reader); // 9
+                    ParseExpression(reader); // 10
+                    ParseExpression(reader); // 11
+                    break;
+                }
+                case 0x6E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x6F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x70:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x71:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x72:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x73:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x74:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x75:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x76:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x77:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x78:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x79:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x7A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x7B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x7C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x7D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x7E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x7F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x80:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x81:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x82:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x83:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x84:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x85:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x86:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x87:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x88:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x89:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x8A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x8B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x8C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x8D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x8E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x8F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x90:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x91:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x92:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x93:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0x94:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x95:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x96:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x97:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x98:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0x99:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0x9A:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x9B:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0x9C:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0x9D:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0x9E:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0x9F:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    reader.ReadUInt16();
+                    break;
+                }
+                case 0xA0:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xA1:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xA2:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xA3:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0xA4:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xA5:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xA6:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xA7:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xA8:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xA9:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    break;
+                }
+                case 0xAA:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xAB:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xAC:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xAD:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0xAE:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xAF:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xB0:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xB1:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xB2:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xB3:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    ParseExpression(reader); // 9
+                    break;
+                }
+                case 0xB4:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xB5:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xB6:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0xB7:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0xB8:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xB9:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xBA:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xBB:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xBC:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xBD:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xBE:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0xBF:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xC0:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xC1:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xC2:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xC3:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xC4:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xC5:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xC6:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xC7:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xC8:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    break;
+                }
+                case 0xC9:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xCA:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xCB:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xCC:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xCD:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    break;
+                }
+                case 0xCE:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xCF:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xD0:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    ParseExpression(reader); // 9
+                    ParseExpression(reader); // 10
+                    ParseExpression(reader); // 11
+                    break;
+                }
+                case 0xD1:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xD2:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    break;
+                }
+                case 0xD3:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xD4:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xD5:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xD6:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    break;
+                }
+                case 0xD7:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xD8:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xD9:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xDA:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xDB:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xDC:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0xDD:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    break;
+                }
+                case 0xDE:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    break;
+                }
+                case 0xDF:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    break;
+                }
+                case 0xE0:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xE1:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xE2:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0xE3:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xE4:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    break;
+                }
+                case 0xE5:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xE6:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0xE7:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    break;
+                }
+                case 0xE8:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xE9:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xEA:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0xEB:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xEC:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    break;
+                }
+                case 0xED:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xEE:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xEF:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF0:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    ParseExpression(reader); // 4
+                    ParseExpression(reader); // 5
+                    ParseExpression(reader); // 6
+                    ParseExpression(reader); // 7
+                    ParseExpression(reader); // 8
+                    ParseExpression(reader); // 9
+                    ParseExpression(reader); // 10
+                    break;
+                }
+                case 0xF1:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF2:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF3:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xF4:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    ParseExpression(reader); // 3
+                    break;
+                }
+                case 0xF5:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF6:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF7:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF8:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xF9:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xFA:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xFB:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    break;
+                }
+                case 0xFC:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xFD:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseExpression(reader); // 1
+                    ParseExpression(reader); // 2
+                    break;
+                }
+                case 0xFE:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    break;
+                }
+                case 0xFF:
+                {
+                    Dis?.AppendLine($"{addr:X8} | func_{code:X2}");
+                    ParseStringReference(reader); // s1
                     break;
                 }
                 default:
