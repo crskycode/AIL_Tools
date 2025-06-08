@@ -4705,7 +4705,7 @@ namespace ScriptTool
                     ParseExpression(reader); // 3
                     ParseExpression(reader); // 4
                     ParseExpression(reader); // 5
-                    reader.ReadUInt16();
+                    ParseStringReference(reader); // s1 ( Not sure, get a try. )
                     break;
                 }
                 case 0xA0:
