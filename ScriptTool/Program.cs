@@ -42,9 +42,13 @@ namespace ScriptTool
             var inputEncoding = Encoding.GetEncoding(parsedArgs["-icp"]);
 
             // Versions
-            var scriptVersion = 1;
+            var scriptVersion = 0;
 
-            if (parsedArgs.ContainsKey("-v2"))
+            if (parsedArgs.ContainsKey("-v1"))
+            {
+                scriptVersion = 1;
+            }
+            else if (parsedArgs.ContainsKey("-v2"))
             {
                 scriptVersion = 2;
             }
